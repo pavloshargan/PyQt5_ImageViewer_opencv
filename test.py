@@ -10,6 +10,7 @@ import numpy as np
 import qdarkstyle
 import scipy.misc
 import colorsys
+from PIL import Image
 
 class Window(QMainWindow):
     def __init__(self):
@@ -61,6 +62,11 @@ class Window(QMainWindow):
         openAction.setShortcut('Ctrl+O')
         openAction.setStatusTip('Open document')
         openAction.triggered.connect(self.openCall)
+        # Create new action
+        saveAction = QAction(QIcon('open.png'), '&Save', self)
+        saveAction.setShortcut('Ctrl+O')
+        saveAction.setStatusTip('Save document')
+        saveAction.triggered.connect(self.saveCall)
         # Show the histogram
         showHistogram = QAction(QIcon('open.png'), '&Show histogram', self)
         showHistogram.setStatusTip('Shows the histogram')
@@ -107,6 +113,8 @@ class Window(QMainWindow):
         menuBar = self.menuBar()
         MenuFile = menuBar.addMenu('&File')
         MenuFile.addAction(openAction)
+        MenuFile.addAction(saveAction)
+
 
 
 
@@ -143,10 +151,11 @@ class Window(QMainWindow):
         self.selectedImage = self.grayScale2BGR(self.selectedImage.copy())
 
     def saveSelectedImage(self):
-        rgb = scipy.misc.toimage(self.selectedImage)
+        rgb = Image.fromarray(self.selectedImage, mode=None)
         path = QFileDialog.getSaveFileName(self, 'Save File')
-        print(path)
-        scipy.misc.imsave(path[0], rgb)
+        if path:
+            print(path)
+            rgb.save(path[0])
 
     def showSelectedImage(self):
         cv2.imshow('Selected Image', self.selectedImage)
@@ -170,6 +179,7 @@ class Window(QMainWindow):
         rect = self.rubberband.geometry()
         if rect.width() > 10 and rect.height() > 10:
             self.selectedImage = self.cropImage(rect)
+            print(type(self.selectedImage))
             self.ShowSelectedImage.setEnabled(True)
             self.SaveSelectedImage.setEnabled(True)
             self.ContrastSelectedImage.setEnabled(True)
@@ -217,6 +227,13 @@ class Window(QMainWindow):
         self.image = self.convertCv2ToQimage(cv2Image)
         self.pic.setPixmap(QtGui.QPixmap.fromImage(self.image))
 
+    def saveCall(self):
+        rgb = Image.fromarray(self.cv2Image, mode=None)
+        path = QFileDialog.getSaveFileName(self, 'Save File')
+        if path:
+            print(path)
+            rgb.save(path[0])
+
     def openCall(self):
         dlg = QFileDialog()
         # dlg.setFileMode(QFileDialog.AnyFile)
@@ -261,13 +278,9 @@ class Window(QMainWindow):
 
 
     def example_image_processing_method(self):  #обробка зображення
-        contrast = self.HighContrast(self.cv2Image)
-        self.cv2Image = contrast
+        colorized = self.grayScale2BGR(self.cv2Image)
+        self.cv2Image = colorized
         # self.cv2Image = self.grayScale2BGR(self.cv2Image.copy())
-
-
-
-        cv2.imshow('processed', self.cv2Image)
         # self.cv2Image = cv2.Sobel(self.cv2Image, cv2.CV_8U, 1, 0, ksize=3)
 
         self.changeLabelPic(self.cv2Image)
