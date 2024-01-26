@@ -1,4 +1,5 @@
 import os
+import sys
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QPoint, QRect, QSize, Qt
 from PyQt5 import QtWidgets
@@ -295,8 +296,6 @@ class Window(QMainWindow):
 
 
 if __name__ == '__main__':
-    import sys
-
     app = QApplication(sys.argv)
     window = Window()
     window.show()
